@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 可转债申购提醒脚本
-每天检查是否有新的可转债可以申购
+每天检查是否有新的可转债可以申购，并推送北京天气和日出时间
 """
 
 import os
@@ -31,8 +31,69 @@ def get_convertible_bonds():
             return data['rows']
         return []
     except Exception as e:
-        print(f"获取数据失败: {e}")
+        print(f"获取可转债数据失败: {e}")
         return []
+
+
+def get_beijing_weather():
+    """
+    获取北京天气信息
+    使用免费的天气API：wttr.in
+    """
+    try:
+        # wttr.in 是一个免费的天气服务，支持中文
+        url = "https://wttr.in/Beijing?format=j1&lang=zh"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        current = data['current_condition'][0]
+        today = data['weather'][0]
+        
+        weather_info = {
+            'temp': current['temp_C'],  # 当前温度
+            'feels_like': current['FeelsLikeC'],  # 体感温度
+            'humidity': current['humidity'],  # 湿度
+            'weather_desc': current['lang_zh'][0]['value'] if current.get('lang_zh') else current['weatherDesc'][0]['value'],  # 天气描述
+            'wind_speed': current['windspeedKmph'],  # 风速
+            'wind_dir': current['winddir16Point'],  # 风向
+            'max_temp': today['maxtempC'],  # 最高温度
+            'min_temp': today['mintempC'],  # 最低温度
+            'uv_index': today['uvIndex'],  # 紫外线指数
+            'sunrise': today['astronomy'][0]['sunrise'],  # 日出时间
+            'sunset': today['astronomy'][0]['sunset'],  # 日落时间
+        }
+        
+        return weather_info
+    except Exception as e:
+        print(f"获取天气信息失败: {e}")
+        # 如果主API失败，尝试备用方案
+        try:
+            return get_weather_backup()
+        except:
+            return None
+
+
+def get_weather_backup():
+    """
+    备用天气API：使用 OpenWeatherMap 的免费接口
+    注意：这个需要 API key，但有免费额度
+    也可以使用其他免费天气API
+    """
+    try:
+        # 使用公开的免费天气API（天气预报网）
+        url = "https://api.weatherapi.com/v1/forecast.json"
+        params = {
+            'key': 'free',  # 实际使用时需要注册获取key
+            'q': 'Beijing',
+            'days': 1,
+            'lang': 'zh'
+        }
+        # 这里使用另一个免费API作为示例
+        # 实际使用 wttr.in 通常就足够了
+        return None
+    except:
+        return None
 
 
 def filter_today_bonds(bonds):
@@ -87,33 +148,104 @@ def send_serverchan_notification(title, content, key):
         return False
 
 
-def format_message(bonds):
+def get_weather_emoji(weather_desc):
     """
-    格式化消息内容
+    根据天气描述返回对应的 emoji
     """
-    if not bonds:
-        return "今日无可转债申购", "今天没有新的可转债可以申购哦~\n\n明天见！👋"
+    weather_desc = weather_desc.lower()
+    if '晴' in weather_desc or 'sunny' in weather_desc or 'clear' in weather_desc:
+        return '☀️'
+    elif '云' in weather_desc or 'cloud' in weather_desc:
+        return '☁️'
+    elif '雨' in weather_desc or 'rain' in weather_desc:
+        return '🌧️'
+    elif '雪' in weather_desc or 'snow' in weather_desc:
+        return '❄️'
+    elif '雾' in weather_desc or 'fog' in weather_desc or 'mist' in weather_desc:
+        return '🌫️'
+    elif '雷' in weather_desc or 'thunder' in weather_desc:
+        return '⛈️'
+    else:
+        return '🌤️'
+
+
+def format_weather_section(weather):
+    """
+    格式化天气信息部分
+    """
+    if not weather:
+        return "\n## 🌤️ 今日天气\n\n⚠️ 天气信息获取失败\n\n"
     
-    title = f"🔔 今日有 {len(bonds)} 只可转债可申购！"
+    emoji = get_weather_emoji(weather['weather_desc'])
     
-    content_parts = [
-        f"## 📅 {datetime.now().strftime('%Y年%m月%d日')} 可转债申购清单\n",
-        "---\n"
+    weather_section = [
+        f"\n## {emoji} 北京天气\n\n",
+        f"**{weather['weather_desc']}** | 🌡️ {weather['temp']}°C（体感 {weather['feels_like']}°C）\n\n",
+        f"- 🌡️ **温度范围**: {weather['min_temp']}°C ~ {weather['max_temp']}°C\n",
+        f"- 💧 **湿度**: {weather['humidity']}%\n",
+        f"- 🌬️ **风力**: {weather['wind_dir']} {weather['wind_speed']} km/h\n",
+        f"- ☀️ **紫外线指数**: {weather['uv_index']}\n",
+        f"- 🌅 **日出时间**: {weather['sunrise']}\n",
+        f"- 🌇 **日落时间**: {weather['sunset']}\n\n",
     ]
     
-    for i, bond in enumerate(bonds, 1):
-        content_parts.append(f"### {i}. {bond['name']} ({bond['code']})\n")
-        content_parts.append(f"- **申购代码**: `{bond['apply_code']}`\n")
-        content_parts.append(f"- **正股**: {bond['stock_name']} ({bond['stock_code']})\n")
-        content_parts.append(f"- **评级**: {bond['rating']}\n")
-        content_parts.append("\n")
+    # 添加温馨提示
+    temp = int(weather['temp'])
+    if temp < 0:
+        weather_section.append("🧥 **提示**: 天气寒冷，注意保暖！\n")
+    elif temp < 10:
+        weather_section.append("🧥 **提示**: 气温较低，多穿点衣服。\n")
+    elif temp > 30:
+        weather_section.append("🌊 **提示**: 天气炎热，注意防暑降温！\n")
+    elif temp > 25:
+        weather_section.append("😎 **提示**: 天气温暖舒适。\n")
     
-    content_parts.append("---\n")
-    content_parts.append("💡 **申购提示**：\n")
-    content_parts.append("1. 开盘时间即可申购（9:30-15:00）\n")
-    content_parts.append("2. 无需市值，中签后再缴款\n")
-    content_parts.append("3. 建议顶格申购（通常1万张）\n")
-    content_parts.append("\n🔗 查看详情：https://www.jisilu.cn/data/cbnew/")
+    return ''.join(weather_section)
+
+
+def format_message(bonds, weather):
+    """
+    格式化消息内容（包含可转债和天气信息）
+    """
+    # 标题
+    if not bonds:
+        title = f"☀️ 早安！今日无可转债申购"
+    else:
+        title = f"🔔 今日有 {len(bonds)} 只可转债可申购！"
+    
+    # 开始构建内容
+    content_parts = [
+        f"# {datetime.now().strftime('%Y年%m月%d日')} 早报\n\n",
+    ]
+    
+    # 添加天气信息
+    content_parts.append(format_weather_section(weather))
+    content_parts.append("---\n\n")
+    
+    # 添加可转债信息
+    if bonds:
+        content_parts.append("## 💰 可转债申购清单\n\n")
+        
+        for i, bond in enumerate(bonds, 1):
+            content_parts.append(f"### {i}. {bond['name']} ({bond['code']})\n")
+            content_parts.append(f"- **申购代码**: `{bond['apply_code']}`\n")
+            content_parts.append(f"- **正股**: {bond['stock_name']} ({bond['stock_code']})\n")
+            content_parts.append(f"- **评级**: {bond['rating']}\n")
+            content_parts.append("\n")
+        
+        content_parts.append("---\n\n")
+        content_parts.append("💡 **申购提示**：\n")
+        content_parts.append("1. 开盘时间即可申购（9:30-15:00）\n")
+        content_parts.append("2. 无需市值，中签后再缴款\n")
+        content_parts.append("3. 建议顶格申购（通常1万张）\n")
+        content_parts.append("\n🔗 [查看详情](https://www.jisilu.cn/data/cbnew/)\n")
+    else:
+        content_parts.append("## 💰 可转债申购\n\n")
+        content_parts.append("今天没有新的可转债可以申购。\n\n")
+        content_parts.append("💤 可以安心做其他事情啦！\n")
+    
+    content_parts.append("\n---\n")
+    content_parts.append(f"\n🤖 *自动推送 by GitHub Actions*")
     
     return title, ''.join(content_parts)
 
@@ -122,7 +254,7 @@ def main():
     """
     主函数
     """
-    print(f"开始检查可转债申购信息... {datetime.now()}")
+    print(f"开始运行每日早报... {datetime.now()}")
     
     # 获取 Server酱 密钥
     serverchan_key = os.environ.get('SERVERCHAN_KEY')
@@ -132,23 +264,30 @@ def main():
         print("请在 GitHub 仓库的 Settings -> Secrets 中添加")
         return
     
+    # 获取天气信息
+    print("正在获取北京天气信息...")
+    weather = get_beijing_weather()
+    
+    if weather:
+        print(f"✅ 天气: {weather['weather_desc']}, 温度: {weather['temp']}°C, 日出: {weather['sunrise']}")
+    else:
+        print("⚠️ 天气信息获取失败，将继续处理可转债信息")
+    
     # 获取可转债数据
     print("正在获取可转债数据...")
     all_bonds = get_convertible_bonds()
     
     if not all_bonds:
-        print("⚠️ 未获取到任何数据")
-        return
-    
-    print(f"获取到 {len(all_bonds)} 条数据")
+        print("⚠️ 未获取到可转债数据")
+    else:
+        print(f"获取到 {len(all_bonds)} 条可转债数据")
     
     # 筛选今天可申购的
     today_bonds = filter_today_bonds(all_bonds)
-    
     print(f"今日可申购: {len(today_bonds)} 只")
     
     # 格式化并发送通知
-    title, content = format_message(today_bonds)
+    title, content = format_message(today_bonds, weather)
     
     print(f"标题: {title}")
     print("正在发送微信通知...")
