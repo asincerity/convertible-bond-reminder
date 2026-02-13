@@ -9,6 +9,7 @@ on:
   - cron: '0 3 * * *'   # 9:00
   workflow_dispatch: # 允许手动触发
 
+
 jobs:
   check-bonds:
     runs-on: ubuntu-latest
@@ -29,5 +30,5 @@ jobs:
     
     - name: 检查可转债并发送通知
       env:
-        SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+        WECOM_WEBHOOK_KEY: ${{ secrets.WECOM_WEBHOOK_KEY }}
       run: python check_bonds.py
