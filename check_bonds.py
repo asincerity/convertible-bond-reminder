@@ -75,10 +75,10 @@ def filter_today_bonds(bonds):
     """
     today = datetime.now().strftime('%Y-%m-%d')
     today_bonds = []
-    
+    print(today)
     for bond in bonds:
         cell = bond.get('cell', {})
-        apply_date = cell.get('apply_date', '')
+        apply_date = cell.get('maturity_dt', '')
         
         if apply_date == today:
             today_bonds.append({
