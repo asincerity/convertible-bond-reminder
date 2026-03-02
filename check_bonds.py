@@ -79,7 +79,7 @@ def filter_today_bonds(bonds):
     for bond in bonds:
         cell = bond.get('cell', {})
         apply_date = cell.get('maturity_dt', '')
-        
+        print(apply_date)
         if apply_date == today:
             today_bonds.append({
                 'name': cell.get('bond_nm', '未知'),
