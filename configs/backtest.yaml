@@ -1,0 +1,15 @@
+backtest:
+  initial_cash: 1000000
+  commission_rate: 0.0003
+  slippage_rate: 0.0002
+  min_lot_size: 100
+  t_plus_one: true
+  rebalance_frequency: 5
+  max_position_weight: 0.2
+  max_drawdown_limit: 0.2
+  volatility_target: 0.2
+  stop_loss: 0.08
+  take_profit: 0.2
+  benchmark_symbol: "000300.SH"
+  signal_delay_days: 1
+  liquidity_limit_ratio: 0.1
