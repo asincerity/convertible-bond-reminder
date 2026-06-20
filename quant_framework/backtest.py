@@ -106,7 +106,9 @@ class BacktestEngine:
         strategy_returns = equity_curve.pct_change().fillna(0)
 
         if benchmark is None:
-            benchmark_curve = (1 + close.iloc[:, 0].pct_change().fillna(0)).cumprod() * self.config.initial_cash
+            benchmark_symbol = self.config.benchmark_symbol
+            benchmark_price = close[benchmark_symbol] if benchmark_symbol in close.columns else close.iloc[:, 0]
+            benchmark_curve = (1 + benchmark_price.pct_change().fillna(0)).cumprod() * self.config.initial_cash
         else:
             benchmark_curve = benchmark.reindex(close.index).ffill().bfill()
 

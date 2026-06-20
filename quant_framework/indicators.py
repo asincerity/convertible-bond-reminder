@@ -51,5 +51,6 @@ def atr(high: pd.DataFrame, low: pd.DataFrame, close: pd.DataFrame, window: int 
         "hc": (high - prev_close).abs(),
         "lc": (low - prev_close).abs(),
     }
+    # After concat, columns become MultiIndex (component, symbol); aggregate max true range by symbol.
     tr = pd.concat(tr_components, axis=1).groupby(level=1, axis=1).max()
     return tr.rolling(window=window, min_periods=window).mean()

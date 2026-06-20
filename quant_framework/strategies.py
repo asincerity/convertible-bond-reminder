@@ -60,6 +60,7 @@ class CrossSectionalScoringStrategy(BaseStrategy):
         factor_scores = {
             "momentum": factors.momentum(close, 20),
             "reversal": factors.reversal(close, 5),
+            # Prefer lower volatility assets in cross-sectional ranking.
             "volatility": -factors.volatility(close, 20),
             "quality": factors.quality_proxy(ret, 60),
         }

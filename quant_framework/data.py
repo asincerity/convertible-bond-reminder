@@ -48,7 +48,7 @@ class MarketDataModel:
         return result
 
     @staticmethod
-    def validate(df: pd.DataFrame) -> List[DataValidationIssue]:
+    def validate(df: pd.DataFrame, abnormal_jump_threshold: float = 0.3) -> List[DataValidationIssue]:
         issues: List[DataValidationIssue] = []
 
         for col in ["open", "high", "low", "close", "volume"]:
@@ -71,8 +71,9 @@ class MarketDataModel:
                 issues.append(DataValidationIssue("date", f"duplicate date for symbol {symbol}"))
 
             returns = group["close"].pct_change().abs()
-            if (returns > 0.3).any():
-                issues.append(DataValidationIssue("close", f"abnormal jump (>30%) for symbol {symbol}"))
+            if (returns > abnormal_jump_threshold).any():
+                threshold_pct = int(abnormal_jump_threshold * 100)
+                issues.append(DataValidationIssue("close", f"abnormal jump (>{threshold_pct}%) for symbol {symbol}"))
 
         return issues
 
