@@ -78,6 +78,7 @@ class CrossSectionalScoringStrategy(BaseStrategy):
                 short_syms = row.tail(self.bottom_n).index
                 final_signal.loc[dt, short_syms] = -1
 
+        # If ranking doesn't assign a symbol to long/short buckets, fallback to threshold-based score signal.
         return final_signal.where(final_signal != 0, score_signal)
 
 

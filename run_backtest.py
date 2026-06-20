@@ -56,6 +56,8 @@ def generate_demo_data(days: int = 300, symbols: list[str] | None = None) -> pd.
 
 
 def build_strategy(name: str):
+    if name == "cross_section":
+        return CrossSectionalScoringStrategy()
     if name == "trend":
         return TrendFollowingStrategy()
     if name == "mean_reversion":

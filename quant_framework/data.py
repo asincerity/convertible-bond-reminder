@@ -86,8 +86,10 @@ class MarketDataModel:
         for col in price_columns:
             result[col] = result[col] * result["adj_factor"]
 
-        result["close"] = result["close"] - result["dividend"]
-        result["close"] = result["close"] / result["split_ratio"].replace(0, 1)
+        split_ratio = result["split_ratio"].replace(0, 1)
+        for col in price_columns:
+            result[col] = result[col] - result["dividend"]
+            result[col] = result[col] / split_ratio
         return result
 
     @staticmethod
