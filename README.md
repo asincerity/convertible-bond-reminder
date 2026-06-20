@@ -69,7 +69,7 @@
 1. 安装依赖
 
 ```bash
-cd <project-root>
+cd /path/to/convertible-bond-reminder
 pip install -r requirements.txt
 ```
 

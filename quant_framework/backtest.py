@@ -64,8 +64,8 @@ class BacktestEngine:
                 target_notional = (target - current_weight) * current_equity
                 target_notional = clip_order_by_liquidity(target_notional, px, volume.loc[dt], self.config.liquidity_limit_ratio)
 
-                for symbol in close.columns:
-                    notional = target_notional.get(symbol, 0.0)
+                tradable_notional = target_notional[target_notional.abs() > 1e-9]
+                for symbol, notional in tradable_notional.items():
                     if abs(notional) < 1e-9 or px[symbol] <= 0:
                         continue
 

@@ -33,10 +33,8 @@ def normalize_signal_scores(raw_scores: pd.DataFrame) -> pd.DataFrame:
 
 
 def apply_signal_decay(signals: pd.DataFrame, decay: float) -> pd.DataFrame:
-    result = signals.copy()
-    for i in range(1, len(result.index)):
-        result.iloc[i] = decay * result.iloc[i - 1].fillna(0) + (1 - decay) * result.iloc[i].fillna(0)
-    return result
+    alpha = 1 - decay
+    return signals.fillna(0).ewm(alpha=alpha, adjust=False).mean()
 
 
 def conflict_resolution(signals: pd.DataFrame) -> pd.DataFrame:
