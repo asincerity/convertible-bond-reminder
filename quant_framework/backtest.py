@@ -100,7 +100,7 @@ class BacktestEngine:
             holdings.loc[dt] = current_weight
             daily_ret = (holdings.loc[dt] * returns.loc[dt]).sum()
             equity = (equity_values[-1] if i > 0 else self.config.initial_cash) * (1 + daily_ret)
-            equity_values.append(equity + cash * 0.0)
+            equity_values.append(equity)
 
         equity_curve = pd.Series(equity_values, index=close.index, name="equity")
         strategy_returns = equity_curve.pct_change().fillna(0)
@@ -108,7 +108,7 @@ class BacktestEngine:
         if benchmark is None:
             benchmark_curve = (1 + close.iloc[:, 0].pct_change().fillna(0)).cumprod() * self.config.initial_cash
         else:
-            benchmark_curve = benchmark.reindex(close.index).ffill().fillna(method="bfill")
+            benchmark_curve = benchmark.reindex(close.index).ffill().bfill()
 
         metrics = compute_metrics(strategy_returns, equity_curve)
         trades_df = pd.DataFrame([t.__dict__ for t in trade_log])

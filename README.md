@@ -5,13 +5,13 @@
 ## 功能概览
 
 ### 1) 现有功能：可转债提醒
-- 脚本：`/home/runner/work/convertible-bond-reminder/convertible-bond-reminder/check_bonds.py`
+- 脚本：`check_bonds.py`
 - 通过 GitHub Actions 定时运行，推送可转债申购与天气信息。
 
 ### 2) 新增功能：股票+基金技术分析与量化回测框架
-- 入口脚本：`/home/runner/work/convertible-bond-reminder/convertible-bond-reminder/run_backtest.py`
-- 配置文件：`/home/runner/work/convertible-bond-reminder/convertible-bond-reminder/configs/backtest.yaml`
-- 核心模块目录：`/home/runner/work/convertible-bond-reminder/convertible-bond-reminder/quant_framework`
+- 入口脚本：`run_backtest.py`
+- 配置文件：`configs/backtest.yaml`
+- 核心模块目录：`quant_framework/`
 
 ## 架构分层
 
@@ -41,7 +41,7 @@
 ## 目录结构
 
 ```text
-/home/runner/work/convertible-bond-reminder/convertible-bond-reminder
+.
 ├── check_bonds.py
 ├── run_backtest.py
 ├── configs/
@@ -69,7 +69,7 @@
 1. 安装依赖
 
 ```bash
-cd /home/runner/work/convertible-bond-reminder/convertible-bond-reminder
+cd <project-root>
 pip install -r requirements.txt
 ```
 

@@ -46,5 +46,10 @@ def boll(close: pd.DataFrame, window: int = 20, num_std: float = 2.0):
 
 def atr(high: pd.DataFrame, low: pd.DataFrame, close: pd.DataFrame, window: int = 14) -> pd.DataFrame:
     prev_close = close.shift(1)
-    tr = pd.concat([(high - low), (high - prev_close).abs(), (low - prev_close).abs()], axis=0).groupby(level=1).max()
+    tr_components = {
+        "hl": (high - low),
+        "hc": (high - prev_close).abs(),
+        "lc": (low - prev_close).abs(),
+    }
+    tr = pd.concat(tr_components, axis=1).groupby(level=1, axis=1).max()
     return tr.rolling(window=window, min_periods=window).mean()
