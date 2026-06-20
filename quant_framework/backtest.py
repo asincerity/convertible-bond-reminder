@@ -48,7 +48,6 @@ class BacktestEngine:
 
         for i, dt in enumerate(close.index):
             px = close.loc[dt]
-            port_value = cash + (current_weight * (cash if i == 0 else equity_values[-1])).sum()
 
             if i % self.config.rebalance_frequency == 0:
                 target = signal.loc[dt]

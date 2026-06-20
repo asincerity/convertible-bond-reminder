@@ -45,12 +45,15 @@ def boll(close: pd.DataFrame, window: int = 20, num_std: float = 2.0):
 
 
 def atr(high: pd.DataFrame, low: pd.DataFrame, close: pd.DataFrame, window: int = 14) -> pd.DataFrame:
+    if not (high.columns.equals(low.columns) and high.columns.equals(close.columns)):
+        raise ValueError("high, low, close must share identical columns")
+
     prev_close = close.shift(1)
     tr_components = {
         "hl": (high - low),
         "hc": (high - prev_close).abs(),
         "lc": (low - prev_close).abs(),
     }
-    # After concat, columns become MultiIndex (component, symbol); aggregate max true range by symbol.
+    # Dict-concat builds MultiIndex columns (component, symbol) when inputs share the same symbol columns.
     tr = pd.concat(tr_components, axis=1).groupby(level=1, axis=1).max()
     return tr.rolling(window=window, min_periods=window).mean()
