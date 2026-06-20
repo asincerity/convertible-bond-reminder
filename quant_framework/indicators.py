@@ -47,6 +47,8 @@ def boll(close: pd.DataFrame, window: int = 20, num_std: float = 2.0):
 def atr(high: pd.DataFrame, low: pd.DataFrame, close: pd.DataFrame, window: int = 14) -> pd.DataFrame:
     if not (high.columns.equals(low.columns) and high.columns.equals(close.columns)):
         raise ValueError("high, low, close must share identical columns")
+    if not (high.index.equals(low.index) and high.index.equals(close.index)):
+        raise ValueError("high, low, close must share identical index")
 
     prev_close = close.shift(1)
     tr_components = {

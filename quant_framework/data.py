@@ -72,8 +72,8 @@ class MarketDataModel:
 
             returns = group["close"].pct_change().abs()
             if (returns > abnormal_jump_threshold).any():
-                threshold_pct = int(abnormal_jump_threshold * 100)
-                issues.append(DataValidationIssue("close", f"abnormal jump (>{threshold_pct}%) for symbol {symbol}"))
+                threshold_pct = abnormal_jump_threshold * 100
+                issues.append(DataValidationIssue("close", f"abnormal jump (>{threshold_pct:.1f}%) for symbol {symbol}"))
 
         return issues
 

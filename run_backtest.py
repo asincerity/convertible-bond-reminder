@@ -69,7 +69,7 @@ def build_strategy(name: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="股票+基金技术分析与量化回测框架示例")
+    parser = argparse.ArgumentParser(description="Stock and fund technical analysis and quantitative backtesting framework example")
     parser.add_argument("--config", default="configs/backtest.yaml")
     parser.add_argument("--data", help="CSV data path with unified OHLCV schema")
     parser.add_argument("--output", default="outputs")
@@ -79,7 +79,7 @@ def main():
 
     if args.init_config:
         dump_default_config(args.config)
-        print(f"默认配置已生成: {args.config}")
+        print(f"Default configuration created: {args.config}")
         return
 
     cfg = load_backtest_config(args.config)
@@ -92,7 +92,7 @@ def main():
     data = MarketDataModel.normalize(raw)
     issues = MarketDataModel.validate(data)
     if issues:
-        print("数据质量警告:")
+        print("Data quality warnings:")
         for issue in issues:
             print(f"- [{issue.column}] {issue.message}")
 
@@ -118,10 +118,10 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
     save_reports(result.equity_curve, result.benchmark_curve, result.holdings, result.trades, result.metrics, str(out_dir))
 
-    print("回测完成，核心指标:")
+    print("Backtest complete, core metrics:")
     print(json.dumps(result.metrics.__dict__, ensure_ascii=False, indent=2))
-    print(f"实验记录目录: {run_dir}")
-    print(f"输出目录: {out_dir.resolve()}")
+    print(f"Experiment directory: {run_dir}")
+    print(f"Output directory: {out_dir.resolve()}")
 
 
 if __name__ == "__main__":
